@@ -26,7 +26,7 @@ function mkDb(){const SB=supabase.createClient(SB_URL,SB_KEY),cols={};
   async delete(){await SB.from("docs").delete().eq("path",p);await done(p)},
   onSnapshot(n){watch(col(p),s=>{const x=s.docs.find(d=>d.id===p.split("/")[1]);n({exists:!!x,data:()=>x&&x.data()})})}});
  return{doc:ref,collection:c=>({onSnapshot:n=>watch(c,n)})}}
-(async()=>{try{S.me=localStorage.getItem("chc_me")||null}catch(e){}
+(async()=>{try{const lo=localStorage.getItem("chc_me"),se=sessionStorage.getItem("chc_me");S.me=se||lo||null;S.fromLocal=!se&&!!lo}catch(e){}
  if(!window.supabase||SB_URL.startsWith("PASTE")){$("app").innerHTML='<div class="w card">Weka SB_URL na SB_KEY ya Supabase kwenye faili hili.</div>';return}db=mkDb();
  const need=new Set(["users","treats","appts","notifs","cfg"]);const ok=k=>{need.delete(k);if(!need.size&&!S.ready){S.ready=1;seen=true}if(S.ready)render()};
  setTimeout(()=>{if(!S.ready){S.ready=1;render()}},10000);
@@ -36,4 +36,3 @@ function mkDb(){const SB=supabase.createClient(SB_URL,SB_KEY),cols={};
 
 function eyes(){document.querySelectorAll('#app input[type=password]:not([data-eye]),#app input[data-eye=on]:not([data-b])').forEach(function(i){i.dataset.eye="on";i.dataset.b="1";var b=document.createElement("button");b.type="button";b.className="s o";b.style.marginTop="6px";b.textContent="👁 Onyesha";b.onclick=function(){var h=i.type==="password";i.type=h?"text":"password";b.textContent=h?"🙈 Ficha":"👁 Onyesha"};i.insertAdjacentElement("afterend",b)})}
 new MutationObserver(eyes).observe(document.getElementById("app"),{childList:true,subtree:true});eyes();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       

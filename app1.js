@@ -2,7 +2,7 @@ const SB_URL="https://ytyfkqcehastzbkbgjtd.supabase.co",SB_KEY="sb_publishable_l
 const $=id=>document.getElementById(id),E=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])),T=n=>Number(n||0).toLocaleString("en-US");
 const S={users:[],treats:[],appts:[],notifs:[],cfg:{},me:null,v:"home",sel:null,tr:null,last:null,rep:"day",ready:0,auth:"in",msg:""};
 let db,seen=false;const MOB={mpesa:"M-Pesa",airtel:"Airtel Money",tigo:"Tigo Pesa",halo:"Halopesa"};
-const C=()=>S.cfg||{};const EN=()=>({mteja:"mteja",daktari:"daktari",it:"admin"})[location.hash.slice(1)]||null;addEventListener("hashchange",()=>{S.msg="";S.v="home";S.sel=null;render()});const pay=k=>(C().pay||{})[k]||{};
+const C=()=>S.cfg||{};const EN=()=>({mteja:"mteja",mgonjwa:"mteja",daktari:"daktari",it:"admin"})[location.hash.slice(1)]||null;addEventListener("hashchange",()=>{S.msg="";S.v="home";S.sel=null;render()});const pay=k=>(C().pay||{})[k]||{};
 async function H(s){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("chc"+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
 const id=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 const put=(c,o)=>{const i=o.id||id(c[0]);const {id:_,...r}=o;return db.doc(c+"/"+i).set(r).then(()=>i)};
@@ -11,14 +11,16 @@ const nt=(to,text)=>put("notifs",{to,text,ts:Date.now()});
 const fmt=d=>d?d.split("-").reverse().slice(0,2).join("/"):"";
 function pick(f,m){return new Promise(r=>{const i=new Image;i.onload=()=>{const k=Math.min(1,m/i.width),c=document.createElement("canvas");c.width=i.width*k;c.height=i.height*k;c.getContext("2d").drawImage(i,0,0,c.width,c.height);r(c.toDataURL("image/jpeg",.7))};i.src=URL.createObjectURL(f)})}
 function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);try{const a=new AudioContext(),o=a.createOscillator();o.connect(a.destination);o.frequency.value=880;o.start();o.stop(a.currentTime+.4)}catch(e){}try{navigator.vibrate&&navigator.vibrate(300);window.Notification&&Notification.permission==="granted"&&new Notification(C().name||"Chicco Clinic",{body:t})}catch(e){}setTimeout(()=>d.remove(),6000)}
-function theme(){document.documentElement.style.setProperty("--c",C().color||"#1e6fd9");document.title=C().name||"Chicco Clinic"}
+function theme(){document.documentElement.style.setProperty("--c",C().color||"#1e6fd9");document.title=C().name||"Chicco Clinic";
+ const b=C().bg,s=document.body.style;s.backgroundImage=b?'url("'+b+'")':"";s.backgroundSize="cover";s.backgroundPosition="center";s.backgroundAttachment="fixed";document.body.classList.toggle("hasbg",!!b);
+ if(!$("bgs")){const e=document.createElement("style");e.id="bgs";e.textContent="body.hasbg .w{background:color-mix(in srgb,var(--bg) 85%,transparent);min-height:100vh}";document.head.appendChild(e)}}
 const meU=()=>S.users.find(u=>u.id===S.me)||null;
 const logo=()=>C().logo?`<img src="${E(C().logo)}">`:"";
 const hasAdmin=()=>S.users.some(u=>u.role==="admin");
 function render(){theme();const a=$("app"),u=meU();
  if(!S.ready){return}
  if(S.fromLocal&&u&&u.role!=="mteja"){S.fromLocal=0;S.me=null;ls("");return render()}
- const en=EN();if(!en){a.innerHTML=`<div class="top">${logo()}<b>${E(C().name||"Chicco Clinic")}</b></div><div class="w"><div class="card"><h3>Chagua App</h3><a href="#mteja"><button>App ya Mteja</button></a><a href="#daktari"><button class="o">App ya Daktari</button></a><a href="#it"><button class="o">App ya IT / Admin</button></a></div></div>`;return}
+ const en=EN();if(!en){a.innerHTML=`<div class="top">${logo()}<b>${E(C().name||"Chicco Clinic")}</b></div><div class="w"><div class="card"><h3>Chagua App</h3><a href="#mgonjwa"><button>App ya Mgonjwa</button></a><a href="#daktari"><button class="o">App ya Daktari</button></a><a href="#it"><button class="o">App ya IT / Admin</button></a></div></div>`;return}
  if(u&&u.role!==en){a.innerHTML=`<div class="w"><div class="card"><p>Akaunti yako si ya ukurasa huu. Kila mtu ana App yake.</p><button onclick="logout()">LOGOUT</button></div></div>`;return}
  if(!hasAdmin()&&en!=="admin"){a.innerHTML=`<div class="w card">Clinic bado haijaandaliwa. IT aanze kwenye App ya IT.</div>`;return}
  if(!hasAdmin()){a.innerHTML=`<div class="w"><div class="card"><h3>Anza: Tengeneza akaunti ya Admin (IT)</h3><label>Email</label><input id="e" type="email"><label>Password</label><input id="p" type="password"><button onclick="mkAdmin()">Tengeneza Admin</button><p class="sm">${E(S.msg)}</p></div></div>`;return}
@@ -27,7 +29,7 @@ function render(){theme();const a=$("app"),u=meU();
  let body=u.role==="mteja"?cust(u):u.role==="daktari"?doc(u):adm(u);
  a.innerHTML=`<div class="top">${logo()}<b>${E(C().name||"Chicco Clinic")}</b><span class="sm" style="color:#fff">${E(u.name)}</span></div><div class="w">${body}</div><div class="nav">${tabs.map(t=>`<a href="#" class="${S.v===t[0]?"on":""}" onclick="go('${t[0]}');return false">${t[1]}</a>`).join("")}</div>`}
 const go=v=>{S.v=v;S.sel=null;S.last=null;render();scrollTo(0,0)};
-function authV(){return S.auth==="in"?`<div class="card"><h3>Ingia - ${{mteja:"Mteja",daktari:"Daktari",admin:"IT / Admin"}[EN()]}</h3><label>${EN()==="mteja"?"Namba ya Simu":"Email"}</label><input id="l"><label>Password</label><input id="p" type="password"><button onclick="login()">INGIA</button>${EN()==="mteja"?`<button class="o" onclick="S.auth='up';render()">Jisajili (Mteja mpya)</button>`:""}<button class="o" onclick="S.auth='fp';render()">Nimesahau Password</button><p class="sm">${E(S.msg)}</p></div>`:
+function authV(){return S.auth==="in"?`<div class="card"><h3>Ingia - ${{mteja:"Mgonjwa",daktari:"Daktari",admin:"IT / Admin"}[EN()]}</h3><label>${EN()==="mteja"?"Namba ya Simu":"Email"}</label><input id="l"><label>Password</label><input id="p" type="password"><button onclick="login()">INGIA</button>${EN()==="mteja"?`<button class="o" onclick="S.auth='up';render()">Jisajili (Mgonjwa mpya)</button>`:""}<button class="o" onclick="S.auth='fp';render()">Nimesahau Password</button><p class="sm">${E(S.msg)}</p></div>`:
  S.auth==="fp"?`<div class="card"><h3>Umesahau Password?</h3><p>Wasiliana na IT wa Clinic ${E(C().phone||"")} akuwekee Password mpya.</p><button onclick="S.auth='in';render()">Rudi</button></div>`:
  `<div class="card"><h3>Jisajili</h3><label>Jina Kamili</label><input id="n"><label>Namba ya Simu</label><input id="ph" type="tel"><div class="g2"><div><label>Umri</label><input id="ag" type="number"></div><div><label>Jinsia</label><select id="gn"><option>Me</option><option>Ke</option></select></div></div><label>Unatoka Wapi</label><input id="wp"><label>Password</label><input id="p" type="password"><button onclick="reg()">JISAJILI</button><button class="o" onclick="S.auth='in';render()">Nina akaunti</button><p class="sm">${E(S.msg)}</p></div>`}
 async function mkAdmin(){const e=$("e").value.trim().toLowerCase(),p=$("p").value;if(!e||p.length<6){S.msg="Weka email na password (herufi 6+)";return render()}try{const i=await put("users",{role:"admin",name:"IT Admin",email:e,pw:await H(p)});S.me=i;ls(i);S.v="home";render()}catch(x){S.msg="Imeshindikana: "+(x.message||x);render()}}

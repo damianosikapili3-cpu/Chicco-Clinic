@@ -17,6 +17,7 @@ const logo=()=>C().logo?`<img src="${E(C().logo)}">`:"";
 const hasAdmin=()=>S.users.some(u=>u.role==="admin");
 function render(){theme();const a=$("app"),u=meU();
  if(!S.ready){return}
+ if(S.fromLocal&&u&&u.role!=="mteja"){S.fromLocal=0;S.me=null;ls("");return render()}
  const en=EN();if(!en){a.innerHTML=`<div class="top">${logo()}<b>${E(C().name||"Chicco Clinic")}</b></div><div class="w"><div class="card"><h3>Chagua App</h3><a href="#mteja"><button>App ya Mteja</button></a><a href="#daktari"><button class="o">App ya Daktari</button></a><a href="#it"><button class="o">App ya IT / Admin</button></a></div></div>`;return}
  if(u&&u.role!==en){a.innerHTML=`<div class="w"><div class="card"><p>Akaunti yako si ya ukurasa huu. Kila mtu ana App yake.</p><button onclick="logout()">LOGOUT</button></div></div>`;return}
  if(!hasAdmin()&&en!=="admin"){a.innerHTML=`<div class="w card">Clinic bado haijaandaliwa. IT aanze kwenye App ya IT.</div>`;return}
@@ -30,7 +31,7 @@ function authV(){return S.auth==="in"?`<div class="card"><h3>Ingia - ${{mteja:"M
  S.auth==="fp"?`<div class="card"><h3>Umesahau Password?</h3><p>Wasiliana na IT wa Clinic ${E(C().phone||"")} akuwekee Password mpya.</p><button onclick="S.auth='in';render()">Rudi</button></div>`:
  `<div class="card"><h3>Jisajili</h3><label>Jina Kamili</label><input id="n"><label>Namba ya Simu</label><input id="ph" type="tel"><div class="g2"><div><label>Umri</label><input id="ag" type="number"></div><div><label>Jinsia</label><select id="gn"><option>Me</option><option>Ke</option></select></div></div><label>Unatoka Wapi</label><input id="wp"><label>Password</label><input id="p" type="password"><button onclick="reg()">JISAJILI</button><button class="o" onclick="S.auth='in';render()">Nina akaunti</button><p class="sm">${E(S.msg)}</p></div>`}
 async function mkAdmin(){const e=$("e").value.trim().toLowerCase(),p=$("p").value;if(!e||p.length<6){S.msg="Weka email na password (herufi 6+)";return render()}try{const i=await put("users",{role:"admin",name:"IT Admin",email:e,pw:await H(p)});S.me=i;ls(i);S.v="home";render()}catch(x){S.msg="Imeshindikana: "+(x.message||x);render()}}
-const ls=i=>{try{localStorage.setItem("chc_me",i||"")}catch(e){}};
+const ls=i=>{try{localStorage.removeItem("chc_me");sessionStorage.removeItem("chc_me");if(!i)return;const u=S.users.find(x=>x.id===i);((u&&u.role==="mteja")?localStorage:sessionStorage).setItem("chc_me",i)}catch(e){}};
 async function login(){const l=$("l").value.trim().toLowerCase(),h=await H($("p").value);const u=S.users.find(x=>x.role===EN()&&(x.email===l||x.phone===l)&&x.pw===h);if(!u){S.msg="Simu/Email au Password si sahihi";return render()}S.me=u.id;S.msg="";ls(u.id);S.v="home";render()}
 async function reg(){const g=i=>$(i).value.trim(),ph=g("ph");if(!g("n")||!ph||$("p").value.length<4){S.msg="Jaza Jina, Simu na Password (herufi 4+)";return render()}
  if(S.users.some(x=>x.phone===ph)){S.msg="Namba hii imeshasajiliwa";return render()}
